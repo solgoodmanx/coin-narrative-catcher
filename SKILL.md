@@ -40,12 +40,17 @@ Run memecoin analysis with a narrative-first lens.
      - Why are people buying this *story*?
      - What belief could re-rate demand?
      - What would invalidate that belief?
+   - Build catalyst genealogy using `references/signal-framework.md`.
 
-6. **Use tape as confirmation (secondary)**
+6. **Run Agentic Commerce module when relevant**
+   - If narrative involves agents/wallet rails/ACP/agent-to-agent payments, apply `references/agentic-commerce-framework.md`.
+   - Score money-rail legitimacy, live commerce proof, and token capture clarity.
+
+7. **Use tape as confirmation (secondary)**
    - Check volume/liquidity/tx flow/price expansion only after narrative.
    - Mark whether tape confirms or contradicts current narrative strength.
 
-7. **Return a decision-grade output**
+8. **Return a decision-grade output**
    - Use the output template in `references/output-template.md`.
    - Include a confidence score and invalidation triggers.
 
@@ -71,6 +76,7 @@ Run memecoin analysis with a narrative-first lens.
 
 ## References
 
-- Use `references/signal-framework.md` for scoring and disqualifiers.
+- Use `references/signal-framework.md` for scoring, catalyst genealogy, and state labels.
 - Use `references/output-template.md` for response structure.
 - Use `references/launchpad-attribution.md` for Virtuals/Clanker/Bankr checks.
+- Use `references/agentic-commerce-framework.md` when narrative includes agents/wallet rails/ACP.
