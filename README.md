@@ -12,6 +12,7 @@ CT-first memecoin narrative analysis skill for OpenClaw.
 - `references/` — scoring framework, output template, attribution rules
 - `scripts/check_launchpads.py` — classify CA across Virtuals/Clanker/Bankr
 - `scripts/credibility_graph.py` — build lightweight identity/credibility graph
+- `scripts/analyze_narrative.py` — one-command narrative draft report (attribution + catalyst stub + score)
 
 ## Quick usage
 
@@ -23,6 +24,11 @@ python3 scripts/check_launchpads.py <CA>
 ### Credibility graph
 ```bash
 python3 scripts/credibility_graph.py --handles <x_handle1> <x_handle2> --github <gh_user1>
+```
+
+### One-command narrative draft
+```bash
+python3 scripts/analyze_narrative.py --ca <CA> --x-handle <key_handle>
 ```
 
 ## Package skill

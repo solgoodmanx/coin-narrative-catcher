@@ -73,6 +73,8 @@ Run memecoin analysis with a narrative-first lens.
 - X scan:
   - `x-research search "<CA> OR $TICKER" --quick --markdown`
   - `x-research search "(<topic>) (from:<key_account>)" --quick --markdown`
+- One-command draft:
+  - `python3 scripts/analyze_narrative.py --ca <CA> --x-handle <key_handle>`
 
 ## References
 
