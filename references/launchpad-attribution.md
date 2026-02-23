@@ -33,6 +33,13 @@ Output includes:
 - `classification`: virtuals | clanker | bankr | unattributed
 - source-specific metadata (creator socials, factory, acpAgentId, etc.)
 
+## aGDP link rule
+
+For Virtuals agents, prefer ID-based aGDP links:
+- `https://agdp.io/agent/<acpAgentId>`
+
+Do not assume CA-based aGDP links will always resolve reliably.
+
 ## API endpoints
 
 - Virtuals:

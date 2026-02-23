@@ -206,6 +206,8 @@ def main():
     print("### 3) Credibility Graph")
     print(f"- Builder/Origin handles: {', '.join('@'+h for h in handles) if handles else 'not supplied'}")
     print(f"- Launchpad attribution: {attr['classification']}")
+    if attr.get('classification') == 'virtuals' and (attr.get('virtuals') or {}).get('acpAgentId'):
+        print(f"- aGDP link: https://agdp.io/agent/{attr['virtuals']['acpAgentId']}")
     print("- Trust grade: pending manual verification")
     print()
 
