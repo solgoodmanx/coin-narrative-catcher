@@ -7,16 +7,37 @@ import json
 import sys
 import urllib.parse
 import urllib.request
+import re
 
 
 def get_json(url: str):
-    req = urllib.request.Request(url, headers={"User-Agent": "coin-narrative-catcher/1.0"})
+    headers = {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "application/json,text/plain,*/*",
+        "Origin": "https://app.doppler.lol",
+        "Referer": "https://app.doppler.lol/",
+    }
+    req = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=15) as r:
             data = r.read().decode("utf-8", errors="replace")
             return r.status, json.loads(data)
     except Exception as e:
         return None, {"error": str(e)}
+
+
+def get_text(url: str):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=15) as r:
+            data = r.read().decode("utf-8", errors="replace")
+            return r.status, data
+    except Exception as e:
+        return None, str(e)
 
 
 def main():
@@ -31,10 +52,12 @@ def main():
         "ca": ca,
         "classification": None,
         "confidenceTier": "none",  # exact | heuristic | none
+        "alsoIndexedOn": [],
         "virtuals": {"match": False, "confidenceTier": "none"},
         "clanker": {"match": False, "confidenceTier": "none"},
         "bankr": {"match": False, "confidenceTier": "none"},
         "flaunch": {"match": False, "confidenceTier": "none", "heuristic": "flETH quote token on DexScreener"},
+        "doppler": {"match": False, "confidenceTier": "none", "heuristic": "token is indexed on app.doppler.lol"},
     }
 
     # Virtuals
@@ -86,7 +109,18 @@ def main():
     b_url = "https://api.bankr.bot/token-launches/" + urllib.parse.quote(ca)
     s, b = get_json(b_url)
     if s == 200 and isinstance(b, dict) and not b.get("error"):
-        out["bankr"] = {"match": True, "confidenceTier": "exact", "data": b}
+        launch = b.get("launch") or {}
+        out["bankr"] = {
+            "match": True,
+            "confidenceTier": "exact",
+            "tokenName": launch.get("tokenName"),
+            "tokenSymbol": launch.get("tokenSymbol"),
+            "deployer": launch.get("deployer"),
+            "feeRecipient": launch.get("feeRecipient"),
+            "tweetUrl": launch.get("tweetUrl"),
+            "websiteUrl": launch.get("websiteUrl"),
+            "raw": b,
+        }
 
     # Flaunch (heuristic): token has active DexScreener pair quoted in flETH
     # flETH canonical address from Flaunch contracts/docs
@@ -115,7 +149,30 @@ def main():
                 "pairs": fl_pairs,
             }
 
-    # classify (mutually exclusive in practice)
+    # Doppler index check (heuristic): token page + search index hit
+    ds_url = "https://app.doppler.lol/api/search?query=" + urllib.parse.quote(ca)
+    s, ds = get_json(ds_url)
+    indexed = False
+    if s == 200 and isinstance(ds, list):
+        for row in ds:
+            if str(row.get("address", "")).lower() == ca_l:
+                indexed = True
+                break
+
+    page_url = f"https://app.doppler.lol/tokens/base/{ca_l}"
+    sp, html = get_text(page_url)
+    has_doppler_title = sp == 200 and bool(re.search(r"\|\s*Doppler", html, re.I))
+
+    if indexed or has_doppler_title:
+        out["doppler"] = {
+            "match": True,
+            "confidenceTier": "heuristic",
+            "heuristic": "token is indexed on app.doppler.lol",
+            "pageUrl": page_url,
+            "searchIndexed": indexed,
+        }
+
+    # classify (mutually exclusive primary source; keep secondary index hints)
     if out["virtuals"]["match"]:
         out["classification"] = "virtuals"
         out["confidenceTier"] = out["virtuals"]["confidenceTier"]
@@ -128,9 +185,15 @@ def main():
     elif out["flaunch"]["match"]:
         out["classification"] = "flaunch"
         out["confidenceTier"] = out["flaunch"]["confidenceTier"]
+    elif out["doppler"]["match"]:
+        out["classification"] = "doppler"
+        out["confidenceTier"] = out["doppler"]["confidenceTier"]
     else:
         out["classification"] = "unattributed"
         out["confidenceTier"] = "none"
+
+    if out["doppler"]["match"] and out["classification"] != "doppler":
+        out["alsoIndexedOn"].append("doppler")
 
     json.dump(out, sys.stdout, ensure_ascii=False, indent=2)
     print()

@@ -30,6 +30,11 @@ Run memecoin analysis with a narrative-first lens.
 4. **Build credibility graph (most important)**
    - Map: creator → prior roles/projects → known ecosystem relationships.
    - Use `scripts/credibility_graph.py` for quick node/edge skeleton, then enrich manually.
+   - Run identity anti-larp checks for project handles:
+     - Website/footer links to same X handle
+     - GitHub org/profile links to same X handle
+     - LinkedIn/team pages align with handle
+     - YC/company profiles link to same official account
    - Separate:
      - **High-credibility builders/accounts** (industry proof, track record)
      - **Mid-signal amplifiers** (CT traders/KOLs)
