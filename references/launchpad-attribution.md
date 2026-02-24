@@ -33,6 +33,7 @@ python3 scripts/check_launchpads.py <CA>
 
 Output includes:
 - `classification`: virtuals | clanker | bankr | flaunch | unattributed
+- `confidenceTier`: exact | heuristic | none
 - source-specific metadata (creator socials, factory, acpAgentId, etc.)
 
 ## aGDP link rule

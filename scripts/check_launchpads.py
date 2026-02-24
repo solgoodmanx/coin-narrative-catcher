@@ -30,10 +30,11 @@ def main():
     out = {
         "ca": ca,
         "classification": None,
-        "virtuals": {"match": False},
-        "clanker": {"match": False},
-        "bankr": {"match": False},
-        "flaunch": {"match": False, "heuristic": "flETH quote token on DexScreener"},
+        "confidenceTier": "none",  # exact | heuristic | none
+        "virtuals": {"match": False, "confidenceTier": "none"},
+        "clanker": {"match": False, "confidenceTier": "none"},
+        "bankr": {"match": False, "confidenceTier": "none"},
+        "flaunch": {"match": False, "confidenceTier": "none", "heuristic": "flETH quote token on DexScreener"},
     }
 
     # Virtuals
@@ -47,6 +48,7 @@ def main():
         d0 = v["data"][0]
         out["virtuals"] = {
             "match": True,
+            "confidenceTier": "exact",
             "name": d0.get("name"),
             "symbol": d0.get("symbol"),
             "creator": (d0.get("creator") or {}).get("socials"),
@@ -71,6 +73,7 @@ def main():
         if exact:
             out["clanker"] = {
                 "match": True,
+                "confidenceTier": "exact",
                 "name": exact.get("name"),
                 "symbol": exact.get("symbol"),
                 "type": exact.get("type"),
@@ -83,7 +86,7 @@ def main():
     b_url = "https://api.bankr.bot/token-launches/" + urllib.parse.quote(ca)
     s, b = get_json(b_url)
     if s == 200 and isinstance(b, dict) and not b.get("error"):
-        out["bankr"] = {"match": True, "data": b}
+        out["bankr"] = {"match": True, "confidenceTier": "exact", "data": b}
 
     # Flaunch (heuristic): token has active DexScreener pair quoted in flETH
     # flETH canonical address from Flaunch contracts/docs
@@ -106,6 +109,7 @@ def main():
         if fl_pairs:
             out["flaunch"] = {
                 "match": True,
+                "confidenceTier": "heuristic",
                 "heuristic": "flETH quote token on DexScreener",
                 "flETH": fleth_addr,
                 "pairs": fl_pairs,
@@ -114,14 +118,19 @@ def main():
     # classify (mutually exclusive in practice)
     if out["virtuals"]["match"]:
         out["classification"] = "virtuals"
+        out["confidenceTier"] = out["virtuals"]["confidenceTier"]
     elif out["clanker"]["match"]:
         out["classification"] = "clanker"
+        out["confidenceTier"] = out["clanker"]["confidenceTier"]
     elif out["bankr"]["match"]:
         out["classification"] = "bankr"
+        out["confidenceTier"] = out["bankr"]["confidenceTier"]
     elif out["flaunch"]["match"]:
         out["classification"] = "flaunch"
+        out["confidenceTier"] = out["flaunch"]["confidenceTier"]
     else:
         out["classification"] = "unattributed"
+        out["confidenceTier"] = "none"
 
     json.dump(out, sys.stdout, ensure_ascii=False, indent=2)
     print()
