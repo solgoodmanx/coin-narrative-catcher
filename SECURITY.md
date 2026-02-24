@@ -9,7 +9,7 @@ This project is early stage. Security fixes are applied on `main`.
 Please report vulnerabilities privately first.
 
 - Preferred: open a private advisory on GitHub Security tab
-- Alternate: DM maintainer on X: https://x.com/solgoodmanx
+- Alternate: DM maintainer on X: https://x.com/solgoodman
 
 Please include:
 - affected file/path
