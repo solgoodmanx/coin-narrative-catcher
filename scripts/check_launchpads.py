@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Quick launchpad attribution checker for Base/EVM CAs.
-Checks Virtuals, Clanker, Bankr and prints compact JSON summary.
+Checks Virtuals, Clanker, Bankr, Flaunch and prints compact JSON summary.
 """
 import argparse
 import json
@@ -33,6 +33,7 @@ def main():
         "virtuals": {"match": False},
         "clanker": {"match": False},
         "bankr": {"match": False},
+        "flaunch": {"match": False, "heuristic": "flETH quote token on DexScreener"},
     }
 
     # Virtuals
@@ -84,6 +85,32 @@ def main():
     if s == 200 and isinstance(b, dict) and not b.get("error"):
         out["bankr"] = {"match": True, "data": b}
 
+    # Flaunch (heuristic): token has active DexScreener pair quoted in flETH
+    # flETH canonical address from Flaunch contracts/docs
+    fleth_addr = "0x000000000d564d5be76f7f0d28fe52605afc7cf8"
+    d_url = "https://api.dexscreener.com/latest/dex/tokens/" + urllib.parse.quote(ca)
+    s, d = get_json(d_url)
+    if s == 200 and isinstance(d, dict):
+        pairs = d.get("pairs") or []
+        fl_pairs = []
+        for p in pairs:
+            q = (p.get("quoteToken") or {}).get("address", "")
+            if str(q).lower() == fleth_addr:
+                fl_pairs.append(
+                    {
+                        "pairAddress": p.get("pairAddress"),
+                        "dexId": p.get("dexId"),
+                        "chainId": p.get("chainId"),
+                    }
+                )
+        if fl_pairs:
+            out["flaunch"] = {
+                "match": True,
+                "heuristic": "flETH quote token on DexScreener",
+                "flETH": fleth_addr,
+                "pairs": fl_pairs,
+            }
+
     # classify (mutually exclusive in practice)
     if out["virtuals"]["match"]:
         out["classification"] = "virtuals"
@@ -91,6 +118,8 @@ def main():
         out["classification"] = "clanker"
     elif out["bankr"]["match"]:
         out["classification"] = "bankr"
+    elif out["flaunch"]["match"]:
+        out["classification"] = "flaunch"
     else:
         out["classification"] = "unattributed"
 

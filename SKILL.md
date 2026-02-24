@@ -14,9 +14,9 @@ Run memecoin analysis with a narrative-first lens.
    - Extract token name/symbol, chain, and linked socials/websites.
 
 2. **Run launchpad attribution (Base/EVM)**
-   - Mandatory check: Virtuals / Clanker / Bankr attribution.
+   - Mandatory check: Virtuals / Clanker / Bankr / Flaunch attribution.
    - Use `scripts/check_launchpads.py <CA>`.
-   - Apply exact-match rules from `references/launchpad-attribution.md`.
+   - Apply exact-match + heuristic rules from `references/launchpad-attribution.md`.
 
 3. **Find the catalyst origin**
    - Pull linked X post(s) from DexScreener metadata when present.
