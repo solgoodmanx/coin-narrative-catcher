@@ -99,6 +99,75 @@ class TestCheckLaunchpads(unittest.TestCase):
         self.assertEqual(out["classification"], "unattributed")
         self.assertEqual(out["confidenceTier"], "none")
 
+    def test_virtuals_takes_precedence_over_other_sources(self):
+        mod = _load_module()
+
+        def fake_json(url):
+            if "api2.virtuals.io" in url:
+                return 200, {"data": [{"name": "Virtual Coin", "symbol": "VIRT", "factory": "BONDING_V4"}]}
+            if "clanker.world" in url:
+                return 200, {"data": [{"contract_address": "0xabc", "name": "Clank", "symbol": "CLK"}]}
+            if "api.bankr.bot" in url:
+                return 200, {"launch": {"tokenName": "Bankr Coin", "tokenSymbol": "BNKR"}}
+            if "api.dexscreener.com" in url:
+                return 200, {"pairs": []}
+            if "app.doppler.lol/api/search" in url:
+                return 200, [{"address": "0xabc"}]
+            raise AssertionError(f"Unexpected URL: {url}")
+
+        def fake_text(url):
+            return 200, "<title>Token | Doppler</title>"
+
+        out = mod.classify_launchpad("0xabc", json_fetcher=fake_json, text_fetcher=fake_text)
+        self.assertEqual(out["classification"], "virtuals")
+        self.assertEqual(out["confidenceTier"], "exact")
+
+    def test_doppler_can_be_primary_when_only_signal(self):
+        mod = _load_module()
+
+        def fake_json(url):
+            if "api2.virtuals.io" in url:
+                return 200, {"data": []}
+            if "clanker.world" in url:
+                return 200, {"data": []}
+            if "api.bankr.bot" in url:
+                return 404, {"error": "Token not found"}
+            if "api.dexscreener.com" in url:
+                return 200, {"pairs": []}
+            if "app.doppler.lol/api/search" in url:
+                return 200, [{"address": "0xd0p"}]
+            raise AssertionError(f"Unexpected URL: {url}")
+
+        def fake_text(url):
+            return 200, "<title>Token | Doppler</title>"
+
+        out = mod.classify_launchpad("0xd0p", json_fetcher=fake_json, text_fetcher=fake_text)
+        self.assertEqual(out["classification"], "doppler")
+        self.assertEqual(out["confidenceTier"], "heuristic")
+
+    def test_bankr_403_does_not_false_positive(self):
+        mod = _load_module()
+
+        def fake_json(url):
+            if "api2.virtuals.io" in url:
+                return 200, {"data": []}
+            if "clanker.world" in url:
+                return 200, {"data": []}
+            if "api.bankr.bot" in url:
+                return None, {"error": "HTTP Error 403"}
+            if "api.dexscreener.com" in url:
+                return 200, {"pairs": []}
+            if "app.doppler.lol/api/search" in url:
+                return 200, []
+            raise AssertionError(f"Unexpected URL: {url}")
+
+        def fake_text(url):
+            return 404, ""
+
+        out = mod.classify_launchpad("0x403", json_fetcher=fake_json, text_fetcher=fake_text)
+        self.assertFalse(out["bankr"]["match"])
+        self.assertEqual(out["classification"], "unattributed")
+
 
 if __name__ == "__main__":
     unittest.main()

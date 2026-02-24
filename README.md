@@ -79,6 +79,12 @@ python3 scripts/analyze_narrative.py --ca <CA> --x-handle <key_handle>
 
 - X: [@solgoodman](https://x.com/solgoodman)
 
+## Disclaimer
+
+This repository is a research and analysis helper.
+It is **not financial advice**, not an execution engine, and not a guarantee of token legitimacy.
+Always verify independently before trading.
+
 ## Versioning / releases
 
 Use semantic versioning tags:
