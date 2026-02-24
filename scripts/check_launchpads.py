@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """Quick launchpad attribution checker for Base/EVM CAs.
-Checks Virtuals, Clanker, Bankr, Flaunch and prints compact JSON summary.
+Checks Virtuals, Clanker, Bankr, Flaunch, Doppler and prints compact JSON summary.
 """
 import argparse
 import json
+import re
 import sys
 import urllib.parse
 import urllib.request
-import re
+from typing import Any, Callable, Dict, Tuple
+
+JsonFetcher = Callable[[str], Tuple[int | None, Any]]
+TextFetcher = Callable[[str], Tuple[int | None, str]]
 
 
 def get_json(url: str):
@@ -22,7 +26,7 @@ def get_json(url: str):
         with urllib.request.urlopen(req, timeout=15) as r:
             data = r.read().decode("utf-8", errors="replace")
             return r.status, json.loads(data)
-    except Exception as e:
+    except Exception as e:  # pragma: no cover - network failure path
         return None, {"error": str(e)}
 
 
@@ -36,19 +40,16 @@ def get_text(url: str):
         with urllib.request.urlopen(req, timeout=15) as r:
             data = r.read().decode("utf-8", errors="replace")
             return r.status, data
-    except Exception as e:
+    except Exception as e:  # pragma: no cover - network failure path
         return None, str(e)
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("ca", help="Contract address")
-    args = ap.parse_args()
-
-    ca = args.ca.strip()
+def classify_launchpad(ca: str, json_fetcher: JsonFetcher = get_json, text_fetcher: TextFetcher = get_text) -> Dict[str, Any]:
+    """Classify token launch source and return evidence-rich attribution output."""
+    ca = ca.strip()
     ca_l = ca.lower()
 
-    out = {
+    out: Dict[str, Any] = {
         "ca": ca,
         "classification": None,
         "confidenceTier": "none",  # exact | heuristic | none
@@ -66,7 +67,7 @@ def main():
         + urllib.parse.quote(ca)
         + "&pagination[page]=1&pagination[pageSize]=1&populate=creator"
     )
-    s, v = get_json(v_url)
+    s, v = json_fetcher(v_url)
     if s == 200 and isinstance(v, dict) and v.get("data"):
         d0 = v["data"][0]
         out["virtuals"] = {
@@ -85,7 +86,7 @@ def main():
         + urllib.parse.quote(ca)
         + "&includeUser=true&includeMarket=true"
     )
-    s, c = get_json(c_url)
+    s, c = json_fetcher(c_url)
     if s == 200 and isinstance(c, dict):
         data = c.get("data") or []
         exact = None
@@ -107,7 +108,7 @@ def main():
 
     # Bankr
     b_url = "https://api.bankr.bot/token-launches/" + urllib.parse.quote(ca)
-    s, b = get_json(b_url)
+    s, b = json_fetcher(b_url)
     if s == 200 and isinstance(b, dict) and not b.get("error"):
         launch = b.get("launch") or {}
         out["bankr"] = {
@@ -123,10 +124,9 @@ def main():
         }
 
     # Flaunch (heuristic): token has active DexScreener pair quoted in flETH
-    # flETH canonical address from Flaunch contracts/docs
     fleth_addr = "0x000000000d564d5be76f7f0d28fe52605afc7cf8"
     d_url = "https://api.dexscreener.com/latest/dex/tokens/" + urllib.parse.quote(ca)
-    s, d = get_json(d_url)
+    s, d = json_fetcher(d_url)
     if s == 200 and isinstance(d, dict):
         pairs = d.get("pairs") or []
         fl_pairs = []
@@ -151,7 +151,7 @@ def main():
 
     # Doppler index check (heuristic): token page + search index hit
     ds_url = "https://app.doppler.lol/api/search?query=" + urllib.parse.quote(ca)
-    s, ds = get_json(ds_url)
+    s, ds = json_fetcher(ds_url)
     indexed = False
     if s == 200 and isinstance(ds, list):
         for row in ds:
@@ -160,7 +160,7 @@ def main():
                 break
 
     page_url = f"https://app.doppler.lol/tokens/base/{ca_l}"
-    sp, html = get_text(page_url)
+    sp, html = text_fetcher(page_url)
     has_doppler_title = sp == 200 and bool(re.search(r"\|\s*Doppler", html, re.I))
 
     if indexed or has_doppler_title:
@@ -195,6 +195,15 @@ def main():
     if out["doppler"]["match"] and out["classification"] != "doppler":
         out["alsoIndexedOn"].append("doppler")
 
+    return out
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("ca", help="Contract address")
+    args = ap.parse_args()
+
+    out = classify_launchpad(args.ca)
     json.dump(out, sys.stdout, ensure_ascii=False, indent=2)
     print()
 
