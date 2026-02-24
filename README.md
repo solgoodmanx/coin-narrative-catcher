@@ -77,7 +77,7 @@ python3 scripts/analyze_narrative.py --ca <CA> --x-handle <key_handle>
 
 ## Maintainer
 
-- X: [@solgoodmanx](https://x.com/solgoodmanx)
+- X: [@solgoodman](https://x.com/solgoodman)
 
 ## Versioning / releases
 
