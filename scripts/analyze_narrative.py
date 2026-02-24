@@ -114,14 +114,17 @@ def score_from_signals(attr: Dict[str, Any], dex: Dict[str, Any], handles: List[
     narrative = 3
     social = 2
     tape = 2
+    attribution_integrity = 1
 
     if handles:
         catalyst += 1
         cred += 1
+        attribution_integrity += 1
 
     if attr["classification"] in {"virtuals", "clanker", "bankr"}:
         catalyst += 1
         narrative += 1
+        attribution_integrity += 2
 
     p = dex.get("primary") or {}
     v24 = (p.get("volume") or {}).get("h24") or 0
@@ -130,6 +133,12 @@ def score_from_signals(attr: Dict[str, Any], dex: Dict[str, Any], handles: List[
         tape += 1
     if liq > 50000:
         tape += 1
+
+    info = p.get("info") or {}
+    has_project_x = any((s.get("type") == "twitter" and s.get("url")) for s in (info.get("socials") or []))
+    has_website = bool((info.get("websites") or []))
+    if has_project_x and has_website:
+        attribution_integrity += 1
 
     def c(v: int) -> int:
         return max(0, min(5, v))
@@ -140,6 +149,7 @@ def score_from_signals(attr: Dict[str, Any], dex: Dict[str, Any], handles: List[
         "narrative": c(narrative),
         "social_propagation": c(social),
         "tape_confirmation": c(tape),
+        "attribution_integrity": c(attribution_integrity),
     }
 
 
@@ -226,7 +236,8 @@ def main():
     print(f"- Narrative: {score['narrative']}/5")
     print(f"- Social propagation: {score['social_propagation']}/5")
     print(f"- Tape confirmation: {score['tape_confirmation']}/5")
-    print(f"- **Total narrative strength: {total}/25**")
+    print(f"- Attribution integrity: {score['attribution_integrity']}/5")
+    print(f"- **Total narrative strength: {total}/30**")
     print()
 
     print("### 6) Next Actions")

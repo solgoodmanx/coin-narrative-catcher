@@ -35,8 +35,12 @@
 ### 7) Confirmation Layer (Secondary)
 - Brief tape check only: volume/liquidity/flow and whether it confirms narrative.
 
-### 8) Verdict
-- **Narrative strength score:** <x>/25
+### 8) Attribution Integrity
+- **Attribution integrity (0-5):**
+- **Why:** <CA + project account + builder identity alignment or mismatch>
+
+### 9) Verdict
+- **Narrative strength score:** <x>/30
 - **My stance:** strong setup / tradeable but fragile / weak
 - **Invalidation triggers:**
   1. ...

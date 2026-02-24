@@ -16,7 +16,7 @@ Classify current phase:
 - **Expansion**: broad CT propagation with clear framing
 - **Saturation/Fade-risk**: overextended hype, low new info
 
-## C) Base Narrative Score (0-25)
+## C) Base Narrative Score (0-30)
 
 ### 1) Catalyst Strength (0-5)
 - 5: Direct trigger from high-cred actor/protocol/team account, clear event
@@ -46,6 +46,13 @@ Use only as confirm/deny layer:
 - Rising attention + improving liquidity + clean participation = confirm
 - Narrative hype with weak liquidity/rapid fade = caution
 
+### 6) Attribution Integrity (0-5)
+Measures whether CA, project account, and builder identity align across primary sources.
+- 5: CA appears across project-controlled surfaces + project account + known builder account(s), no conflicts
+- 3: Partial alignment; some links match, some missing
+- 1: Conflicting handles/identity mismatch (possible larp)
+- 0: No verifiable linkage
+
 ---
 
 ## D) Red Flags (hard cautions)
@@ -60,10 +67,10 @@ Use only as confirm/deny layer:
 
 ## E) Scoring Output
 
-- 20-25: Strong narrative setup
-- 14-19: Tradeable but fragile
-- 8-13: Mostly noise/spec churn
-- <8: Low-quality setup
+- 24-30: Strong narrative setup
+- 16-23: Tradeable but fragile
+- 9-15: Mostly noise/spec churn
+- <9: Low-quality setup
 
 Always add:
 - current state (Discovery/Validation/Expansion/Saturation)
