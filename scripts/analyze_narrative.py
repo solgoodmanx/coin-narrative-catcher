@@ -72,13 +72,30 @@ def launchpad_attribution(ca: str) -> Dict[str, Any]:
     ) or {}
     if v.get("data"):
         d0 = v["data"][0]
+        creator = d0.get("creator") or {}
+        socials = creator.get("socials") or {}
+        usernames = socials.get("VERIFIED_USERNAMES") or {}
+        links = socials.get("VERIFIED_LINKS") or {}
+        twitter_handle = usernames.get("TWITTER")
+        acp_agent_id = d0.get("acpAgentId")
+        creator_email = creator.get("email")
+
         out["virtuals"] = {
             "match": True,
             "name": d0.get("name"),
             "symbol": d0.get("symbol"),
-            "creator": (d0.get("creator") or {}).get("socials"),
+            "creator": socials,
+            "creatorEmailMasked": creator_email,
+            "creatorEmailHintIsVirtuals": isinstance(creator_email, str) and creator_email.endswith("v***.io"),
+            "linkedHandlesCurrent": {"twitter": twitter_handle},
+            "linkedHandleLinks": {"twitter": links.get("TWITTER")},
             "factory": d0.get("factory"),
-            "acpAgentId": d0.get("acpAgentId"),
+            "acpAgentId": acp_agent_id,
+            "virtualsId": d0.get("id"),
+            "links": {
+                "virtualsTrading": f"https://app.virtuals.io/virtuals/{d0.get('id')}" if d0.get("id") is not None else None,
+                "agdp": f"https://agdp.io/agent/{acp_agent_id}" if acp_agent_id else None,
+            },
         }
         out["classification"] = "virtuals"
         return out
@@ -176,6 +193,64 @@ def resolve_top_tweet(tweet_links: List[str]) -> Optional[Dict[str, Any]]:
     return None
 
 
+def fetch_x_profile(handle: str) -> Optional[Dict[str, Any]]:
+    h = handle.lstrip("@")
+    fx = get_json(f"https://api.fxtwitter.com/{urllib.parse.quote(h)}") or {}
+    return fx.get("user")
+
+
+def linked_handle_crosscheck(
+    linked_handle: Optional[str], token_name: Optional[str], token_symbol: Optional[str], top_tweet: Optional[Dict[str, Any]]
+) -> Dict[str, Any]:
+    """Cross-check linked handle for direct/indirect shill clues with currently available public data."""
+    out: Dict[str, Any] = {
+        "linkedHandle": linked_handle,
+        "directShill": "unknown",
+        "indirectClues": [],
+        "timingAlignment": "unknown",
+        "shillQuality": "unknown",
+        "confidence": "unknown",
+    }
+    if not linked_handle:
+        return out
+
+    h = linked_handle.lstrip("@").lower()
+    profile = fetch_x_profile(h)
+    if profile:
+        desc = (profile.get("description") or "").lower()
+        website = ((profile.get("website") or {}).get("url") or "").lower()
+        n = (token_name or "").lower()
+        s = (token_symbol or "").lower()
+        if n and n in desc:
+            out["indirectClues"].append("token name mentioned in linked-handle bio")
+        if s and s and f"${s}" in desc:
+            out["indirectClues"].append("ticker appears in linked-handle bio")
+        if "virtuals" in desc:
+            out["indirectClues"].append("linked handle bio references Virtuals")
+        if website:
+            out["indirectClues"].append("linked handle has external website configured")
+
+    if top_tweet and top_tweet.get("author"):
+        author = str(top_tweet.get("author")).lstrip("@").lower()
+        if author == h:
+            out["directShill"] = "yes"
+            out["timingAlignment"] = "strong"
+            out["confidence"] = "confirmed"
+        else:
+            out["directShill"] = "no"
+            out["timingAlignment"] = "weak"
+            out["confidence"] = "likely"
+
+    if out["directShill"] == "yes":
+        out["shillQuality"] = "manual-review-needed"
+    elif out["indirectClues"]:
+        out["shillQuality"] = "signal-present"
+    else:
+        out["shillQuality"] = "low-signal"
+
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ca", required=True, help="Contract address / token mint")
@@ -193,6 +268,11 @@ def main():
 
     token = dex.get("token") or {}
     p = dex.get("primary") or {}
+
+    linked_twitter = None
+    if attr.get("classification") == "virtuals":
+        linked_twitter = ((attr.get("virtuals") or {}).get("linkedHandlesCurrent") or {}).get("twitter")
+    cross = linked_handle_crosscheck(linked_twitter, token.get("name"), token.get("symbol"), top_tweet)
 
     print(f"## Narrative Read — {token.get('name') or 'Unknown'} ({token.get('symbol') or '?'})")
     print()
@@ -216,12 +296,29 @@ def main():
     print("### 3) Credibility Graph")
     print(f"- Builder/Origin handles: {', '.join('@'+h for h in handles) if handles else 'not supplied'}")
     print(f"- Launchpad attribution: {attr['classification']}")
-    if attr.get('classification') == 'virtuals' and (attr.get('virtuals') or {}).get('acpAgentId'):
-        print(f"- aGDP link: https://agdp.io/agent/{attr['virtuals']['acpAgentId']}")
+    if attr.get("classification") == "virtuals":
+        v = attr.get("virtuals") or {}
+        current_twitter = (v.get("linkedHandlesCurrent") or {}).get("twitter")
+        print(f"- Linked handles (current): {'@'+current_twitter if current_twitter else 'none'}")
+        print("- Linked handles (previous): unavailable from public API")
+        print(f"- Creator email (masked): {v.get('creatorEmailMasked')}")
+        print(f"- Creator email virtuals-domain hint: {'yes' if v.get('creatorEmailHintIsVirtuals') else 'no'}")
+        links = v.get("links") or {}
+        print(f"- aGDP link: {links.get('agdp') or 'not provided by API; use manual AGDP agent-name+CA cross-check'}")
+        print(f"- Virtuals trading link: {links.get('virtualsTrading')}")
     print("- Trust grade: pending manual verification")
     print()
 
-    print("### 4) Confirmation Layer (Secondary)")
+    print("### 4) Linked Handle Cross-check")
+    print(f"- Linked handle: {cross.get('linkedHandle') or 'none'}")
+    print(f"- Direct shill detected: {cross.get('directShill')}")
+    print(f"- Indirect clues: {', '.join(cross.get('indirectClues') or []) or 'none'}")
+    print(f"- Timing alignment: {cross.get('timingAlignment')}")
+    print(f"- Shill quality: {cross.get('shillQuality')}")
+    print(f"- Confidence: {cross.get('confidence')}")
+    print()
+
+    print("### 5) Confirmation Layer (Secondary)")
     v24 = (p.get("volume") or {}).get("h24")
     liq = (p.get("liquidity") or {}).get("usd")
     pc24 = (p.get("priceChange") or {}).get("h24")
@@ -230,7 +327,7 @@ def main():
     print(f"- 24h price change: {pc24}")
     print()
 
-    print("### 5) Score")
+    print("### 6) Score")
     print(f"- Catalyst: {score['catalyst']}/5")
     print(f"- Credibility: {score['credibility']}/5")
     print(f"- Narrative: {score['narrative']}/5")
@@ -240,10 +337,11 @@ def main():
     print(f"- **Total narrative strength: {total}/30**")
     print()
 
-    print("### 6) Next Actions")
+    print("### 7) Next Actions")
     print("1. Run x-research query on CA + ticker + key handles for amplification map.")
     print("2. Verify builder claims from primary sources (official pages/repos).")
     print("3. Confirm whether token capture mechanics are live or only promised.")
+    print("4. Directionality check before claims: verify A→B and B→A links separately.")
 
 
 if __name__ == "__main__":

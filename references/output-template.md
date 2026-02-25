@@ -18,28 +18,43 @@
 ### 4) Credibility Graph
 - **Builder/Origin:** <identity + relevant track record>
 - **Ecosystem ties:** <protocol/team/community ties>
+- **Linked handles (current):** <x/telegram/etc from launchpad metadata>
+- **Linked handles (previous):** <if known; otherwise explicitly "unknown">
+- **Creator email pattern:** <masked email + virtuals-domain hint yes/no>
 - **Trust grade:** high / medium / low (one-line reason)
 
-### 5) What CT Is Actually Saying
+### 5) Linked-Handle Cross-check
+- **Direct shill check:** <did linked account directly shill token/CA?>
+- **Indirect clue check:** <did linked account hint launch without posting CA?>
+- **Timing alignment:** <post timing vs launch timestamp>
+- **Shill quality grade:** clean thesis / mixed / sloppy
+- **Confidence:** confirmed / likely / unknown
+
+### 6) What CT Is Actually Saying
 - Summarize into 2-3 clusters:
   - smart-bull thesis
   - neutral skepticism
   - low-signal hype/noise
 
-### 6) Agentic Commerce Module (if relevant)
+### 7) Agentic Commerce Module (if relevant)
 - **Money-rail legitimacy (0-5):**
 - **Live commerce proof (0-5):**
 - **Token capture clarity (0-5):**
 - **Agentic subtotal:** <x>/15
 
-### 7) Confirmation Layer (Secondary)
+### 8) Confirmation Layer (Secondary)
 - Brief tape check only: volume/liquidity/flow and whether it confirms narrative.
 
-### 8) Attribution Integrity
+### 9) Attribution Integrity
 - **Attribution integrity (0-5):**
 - **Why:** <CA + project account + builder identity alignment or mismatch>
+- **Directionality check:** verify A→B and B→A links separately before claiming relationship.
 
-### 9) Verdict
+### 10) Required Links
+- **aGDP agent link:** <https://agdp.io/agent/{id} or "manual lookup required (agent search + CA cross-check)">
+- **Virtuals trading link:** <https://app.virtuals.io/virtuals/{id}>
+
+### 11) Verdict
 - **Narrative strength score:** <x>/30
 - **My stance:** strong setup / tradeable but fragile / weak
 - **Invalidation triggers:**

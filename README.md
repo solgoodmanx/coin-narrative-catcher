@@ -23,6 +23,9 @@ Output includes:
 - `classification`
 - `confidenceTier`
 - `alsoIndexedOn` (secondary index hints)
+- linked handles (current), creator email pattern hints, and required links
+- aGDP deep link when available (`https://agdp.io/agent/{id}`), otherwise explicit manual-lookup fallback
+- directionality guardrail reminder (verify A→B and B→A separately)
 
 ## Why these APIs are used
 

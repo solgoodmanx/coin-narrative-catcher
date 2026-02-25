@@ -70,14 +70,35 @@ def classify_launchpad(ca: str, json_fetcher: JsonFetcher = get_json, text_fetch
     s, v = json_fetcher(v_url)
     if s == 200 and isinstance(v, dict) and v.get("data"):
         d0 = v["data"][0]
+        creator = d0.get("creator") or {}
+        socials = creator.get("socials") or {}
+        usernames = socials.get("VERIFIED_USERNAMES") or {}
+        links = socials.get("VERIFIED_LINKS") or {}
+        twitter_handle = usernames.get("TWITTER")
+        acp_agent_id = d0.get("acpAgentId")
+        creator_email = creator.get("email")
+        email_hint_is_virtuals = isinstance(creator_email, str) and creator_email.endswith("v***.io")
+
         out["virtuals"] = {
             "match": True,
             "confidenceTier": "exact",
             "name": d0.get("name"),
             "symbol": d0.get("symbol"),
-            "creator": (d0.get("creator") or {}).get("socials"),
+            "creator": socials,
+            "creatorEmailMasked": creator_email,
+            "creatorEmailHintIsVirtuals": email_hint_is_virtuals,
+            "linkedHandlesCurrent": {
+                "twitter": twitter_handle,
+            },
+            "linkedHandleLinks": {
+                "twitter": links.get("TWITTER"),
+            },
             "factory": d0.get("factory"),
-            "acpAgentId": d0.get("acpAgentId"),
+            "acpAgentId": acp_agent_id,
+            "links": {
+                "virtualsTrading": f"https://app.virtuals.io/virtuals/{d0.get('id')}" if d0.get("id") is not None else None,
+                "agdp": f"https://agdp.io/agent/{acp_agent_id}" if acp_agent_id else None,
+            },
         }
 
     # Clanker
