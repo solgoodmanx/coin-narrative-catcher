@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- CI lint regressions (Ruff E501 line-length) in narrative scripts.
+- Main branch CI is green again after formatting-safe refactors.
+
 ## [0.1.0] - 2026-02-24
 
 ### Added

@@ -2,6 +2,8 @@
 
 CT-first memecoin narrative analysis skill for OpenClaw.
 
+Status: ✅ CI passing on `main`.
+
 ## What it does
 
 - Prioritizes catalyst origin + credibility graph + narrative payload
