@@ -93,7 +93,11 @@ def launchpad_attribution(ca: str) -> Dict[str, Any]:
             "acpAgentId": acp_agent_id,
             "virtualsId": d0.get("id"),
             "links": {
-                "virtualsTrading": f"https://app.virtuals.io/virtuals/{d0.get('id')}" if d0.get("id") is not None else None,
+                "virtualsTrading": (
+                    f"https://app.virtuals.io/virtuals/{d0.get('id')}"
+                    if d0.get("id") is not None
+                    else None
+                ),
                 "agdp": f"https://agdp.io/agent/{acp_agent_id}" if acp_agent_id else None,
             },
         }
@@ -200,7 +204,10 @@ def fetch_x_profile(handle: str) -> Optional[Dict[str, Any]]:
 
 
 def linked_handle_crosscheck(
-    linked_handle: Optional[str], token_name: Optional[str], token_symbol: Optional[str], top_tweet: Optional[Dict[str, Any]]
+    linked_handle: Optional[str],
+    token_name: Optional[str],
+    token_symbol: Optional[str],
+    top_tweet: Optional[Dict[str, Any]],
 ) -> Dict[str, Any]:
     """Cross-check linked handle for direct/indirect shill clues with currently available public data."""
     out: Dict[str, Any] = {
@@ -277,7 +284,9 @@ def main():
     print(f"## Narrative Read — {token.get('name') or 'Unknown'} ({token.get('symbol') or '?'})")
     print()
     print("### 1) Core Bullish Thesis (Draft)")
-    print(f"- Token discovered on {token.get('chainId') or 'unknown chain'}; attribution: **{attr['classification']}**.")
+    chain = token.get("chainId") or "unknown chain"
+    classification = attr["classification"]
+    print(f"- Token discovered on {chain}; attribution: **{classification}**.")
     if handles:
         print(f"- Key handles supplied: {', '.join('@'+h for h in handles)}.")
     if top_tweet:

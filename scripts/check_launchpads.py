@@ -16,7 +16,10 @@ TextFetcher = Callable[[str], Tuple[int | None, str]]
 
 def get_json(url: str):
     headers = {
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "User-Agent": (
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+        ),
         "Accept": "application/json,text/plain,*/*",
         "Origin": "https://app.doppler.lol",
         "Referer": "https://app.doppler.lol/",
@@ -32,7 +35,10 @@ def get_json(url: str):
 
 def get_text(url: str):
     headers = {
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "User-Agent": (
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+        ),
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     }
     req = urllib.request.Request(url, headers=headers)
@@ -44,7 +50,11 @@ def get_text(url: str):
         return None, str(e)
 
 
-def classify_launchpad(ca: str, json_fetcher: JsonFetcher = get_json, text_fetcher: TextFetcher = get_text) -> Dict[str, Any]:
+def classify_launchpad(
+    ca: str,
+    json_fetcher: JsonFetcher = get_json,
+    text_fetcher: TextFetcher = get_text,
+) -> Dict[str, Any]:
     """Classify token launch source and return evidence-rich attribution output."""
     ca = ca.strip()
     ca_l = ca.lower()
@@ -96,7 +106,11 @@ def classify_launchpad(ca: str, json_fetcher: JsonFetcher = get_json, text_fetch
             "factory": d0.get("factory"),
             "acpAgentId": acp_agent_id,
             "links": {
-                "virtualsTrading": f"https://app.virtuals.io/virtuals/{d0.get('id')}" if d0.get("id") is not None else None,
+                "virtualsTrading": (
+                    f"https://app.virtuals.io/virtuals/{d0.get('id')}"
+                    if d0.get("id") is not None
+                    else None
+                ),
                 "agdp": f"https://agdp.io/agent/{acp_agent_id}" if acp_agent_id else None,
             },
         }
