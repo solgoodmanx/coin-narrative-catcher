@@ -41,6 +41,8 @@ Low score if identity is vague, recycled, or unverifiable.
 - Mid: mixed original + repeated reposts
 - Low: mostly copy-paste shill spam
 
+> **X Policy Note (March 2026):** X now requires crypto/casino paid promotions to be labeled "Advertisement" or posted via X Ads. Any post with a paid partnership disclosure label should be treated as **bought signal** — downgrade its organic weight accordingly. Unprompted organic posts from unaffiliated accounts carry higher signal than labeled promotions.
+
 ### 5) Tape Confirmation (0-5) — secondary
 Use only as confirm/deny layer:
 - Rising attention + improving liquidity + clean participation = confirm
