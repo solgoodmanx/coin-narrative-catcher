@@ -15,6 +15,29 @@ Status: ✅ CI passing on `main`.
   - Flaunch (heuristic)
   - Doppler (heuristic/index signal)
 
+## What it does not do
+
+- place trades
+- guarantee a token is safe or legitimate
+- treat all launchpad signals as equally strong
+- replace primary-source verification for identity / prestige claims
+
+## Architecture
+
+```text
+CA / token input
+    ↓
+launchpad attribution
+    ↓
+creator / linked-handle discovery
+    ↓
+credibility graph
+    ↓
+CT narrative read
+    ↓
+confidence tier + final report
+```
+
 ## Trust model (attribution confidence)
 
 - **exact**: first-party launch source returns an exact CA match
@@ -71,6 +94,20 @@ python3 scripts/credibility_graph.py --handles <x_handle1> <x_handle2> --github 
 ```bash
 python3 scripts/analyze_narrative.py --ca <CA> --x-handle <key_handle>
 ```
+
+## Example report shape
+
+```text
+classification: Virtuals
+confidenceTier: exact
+alsoIndexedOn: []
+linkedHandles: [project_handle, creator_handle]
+keyQuestion: who launched this, who is pushing it, and why does the market care?
+read: narrative looks strong / mixed / weak depending on catalyst + credibility graph
+```
+
+The point is not to output a magic score in a vacuum.
+The point is to reduce a memecoin into the few identity and catalyst questions that actually matter.
 
 ## Quality controls
 

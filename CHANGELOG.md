@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- README now explains scope boundaries more explicitly (`what it does` / `what it does not do`).
+- Added a lightweight architecture flow so the attribution → credibility → narrative pipeline is easier to understand.
+- Added an example report shape to make the output style more concrete for first-time readers.
+
 ### Fixed
 - CI lint regressions (Ruff E501 line-length) in narrative scripts.
 - Main branch CI is green again after formatting-safe refactors.
